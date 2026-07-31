@@ -1,3 +1,37 @@
-@use "./variables.scss" as *;
+// Applies inside the article content only, so it doesn't leak into
+// the sidebar, explorer, or other UI chrome
+article {
+    img {
+        display: block;
+        margin: 40px auto;
+    }
 
-// put your custom CSS here!
+    table {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    blockquote {
+        margin-bottom: 50px;
+
+        p {
+            padding: 15px 10px;
+        }
+    }
+
+    h1, h2, h3, h4 {
+        padding-top: 10px;
+    }
+
+    li {
+        margin-top: 7px;
+    }
+
+    div.mermaid {
+        text-align: center;
+    }
+}
+
+.content-meta time {
+    display: none;
+}
