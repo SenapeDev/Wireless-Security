@@ -10,7 +10,7 @@ This is a collection of notes covering the principles of wireless communications
 > [!danger] Copyright notice 
 > Some images included in these notes are **not my original work**. They are used exclusively for educational and documentation purposes and were collected from publicly available sources, technical documentation, research papers, or presentation slides created by their respective authors.
 >
-> I do **not** claim ownership of such material. All copyrights and intellectual property rights remain with their respective owners. If you are the copyright holder of any image and believe it should not appear here, please open an issue or contact me and I will promptly remove or replace it.
+> I do **not** claim ownership of such material. All copyrights and intellectual property rights remain with their respective owners. If you are the copyright holder of any image and believe it should not appear here, please [open an issue](https://github.com/SenapeDev/Wireless-Security/issues) or contact me and I will promptly remove or replace it.
 
 ---
 ### Index
