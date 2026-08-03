@@ -151,7 +151,7 @@ $$
 ((M | CRC(M)) \oplus K) \oplus (ΔM | CRC(ΔM))
 $$
 $$
-= ((M \oplus ΔM) | (CRC(M) \oplus CRC(ΔM))) \oplus K \
+= ((M \oplus ΔM) | (CRC(M) \oplus CRC(ΔM))) \oplus K
 $$
 $$
 = ((M \oplus ΔM) | CRC(M \oplus ΔM)) \oplus K

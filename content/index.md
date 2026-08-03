@@ -1,13 +1,16 @@
 ---
-title: "Wireless Security notes"
+title: "Wireless Security"
 ---
 
-> **Teacher**: Mellia Marco
-> **CFU**: 6 (12)
-> **Semester**: 2 semester, 1 year
+#### Overview
+This is a collection of notes covering the principles of wireless communications and the security of modern wireless technologies. Topics range from signal processing and digital communication fundamentals to the protocols, architectures, and security mechanisms behind GNSS, Wi-Fi, Bluetooth, and cellular networks. Whenever applicable, attacks, protocol weaknesses, and mitigation techniques are presented alongside the technologies they target.
 
-#### Course description
-The course is one of the characterizing courses of all the tracks. Taught in English in the second semester of the second year of the Master of Science in Cybersecurity, the course presents the technologies for wireless communications and the burden they create for the security of IT systems. The course focuses on the challenges of providing secure communication and network services in various wireless technologies and the approaches to address these challenges. Topics include a technology overview of different wireless communications systems, their vulnerabilities, attacks, security mechanisms, and trade-offs at various layers of the protocol stack, from physical communication aspects to application and service security issues; examples include jamming, MAC-layer misbehavior, denial of service attacks, and cross-layer holistic attacks. The course introduces wireless technologies, including global navigation satellite systems (e.g., GPS), WiFi, Bluetooth, 3G/4G cellular networks. The student will learn the various wireless system architectures and the security challenges one must consider and face to offer a reliable and secure communication system. The students will gain hands-on experience using tools and practical lab experiences.
+
+
+> [!danger] Copyright notice 
+> Some images included in these notes are **not my original work**. They are used exclusively for educational and documentation purposes and were collected from publicly available sources, technical documentation, research papers, or presentation slides created by their respective authors.
+>
+> I do **not** claim ownership of such material. All copyrights and intellectual property rights remain with their respective owners. If you are the copyright holder of any image and believe it should not appear here, please open an issue or contact me and I will promptly remove or replace it.
 
 ---
 ### Index

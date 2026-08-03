@@ -55,7 +55,8 @@ In the frequency domain, this multiplication shifts the entire spectrum of $x(t)
 The simplest way to encode bits into a baseband analog signal is called **Pulse Amplitude Modulation**, or PAM. The idea is straightforward: we define a basic pulse shape $g(t)$, which is a waveform that lasts for a duration $T$ (called the symbol duration). To transmit a bit, we send either $+g(t)$ or $-g(t)$ depending on whether the bit is a 1 or a 0.
 
 More precisely, in binary PAM (or 2-PAM):
-$$s(t) = g(t) \quad \Rightarrow \quad \text{"1"}$$$$s(t) = -g(t) \quad \Rightarrow \quad \text{"0"}$$
+$$s(t) = g(t) \quad \Rightarrow \quad \text{"1"}$$
+$$s(t) = -g(t) \quad \Rightarrow \quad \text{"0"}$$
 
 The simplest choice for $g(t)$ is a rectangular pulse: it has a constant amplitude $A$ for the entire duration $T$, and is zero everywhere else. Visually, you can think of the set of possible transmitted signals as two points on a line, at $+1$ and $-1$, where the coordinate axis is labeled $g(t)$.
 ![[Pasted image 20260306113114.png|420]]

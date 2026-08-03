@@ -1,5 +1,12 @@
 // Applies inside the article content only, so it doesn't leak into
 // the sidebar, explorer, or other UI chrome
+
+:root[saved-theme="light"] {
+  --light: #ffffff;
+  --lightgray: #ffffff;
+  --gray: #666;
+}
+
 article {
     img {
         display: block;

@@ -274,7 +274,7 @@ plugins:
 #  - source: "@quartz-themes/core"
 #    enabled: true
 #    options:
-#      theme: "tokyo-night"
+#      theme: "abyssal"
 #      mode: "both"
 layout:
   groups:
