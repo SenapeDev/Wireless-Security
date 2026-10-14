@@ -61,6 +61,10 @@ def find_chrome():
     sys.exit("Chrome/Chromium not found (set CHROME)")
 
 
+def norm(text):
+    return re.sub(r"[\W_]+", "", text.lower())
+
+
 def split_frontmatter(text):
     m = re.match(r"\A---\n(.*?\n)---\n", text, re.S)
     if not m:
@@ -101,10 +105,26 @@ class Builder:
                 self.files.setdefault(key, p)
         self.notes = {k: v for k, v in self.files.items() if v.suffix == ".md"}
         self.images = {}  # original name -> sanitized name in work dir
+        self.heading_ids = {}  # stem -> {normalized heading: anchor id}
         self.mermaid_count = 0
         self.mmdc = shutil.which("mmdc")
         (work / "img").mkdir(parents=True, exist_ok=True)
         (work / "mermaid").mkdir(parents=True, exist_ok=True)
+
+    def headings(self, text):
+        """Heading texts of a note, in order, skipping fenced code."""
+        found, fenced = [], False
+        for line in text.splitlines():
+            if FENCE.match(line):
+                fenced = not fenced
+            elif not fenced and (h := HEADING.match(line)):
+                found.append(h.group(2))
+        return found
+
+    def register(self, stem, body):
+        ids = self.heading_ids.setdefault(stem, {})
+        for k, text in enumerate(self.headings(body)):
+            ids.setdefault(norm(text), f"{slug(stem)}-h{k}")
 
     def image(self, name):
         if name in self.images:
@@ -137,7 +157,8 @@ class Builder:
             return name  # transcluded note: just name it
         label = rest[-1] if rest else (heading.strip() or name)
         if name in self.notes:
-            return f"[{label}](#{slug(name)})"
+            anchor = self.heading_ids.get(name, {}).get(norm(heading)) if heading.strip() else None
+            return f"[{label}](#{anchor or slug(name)})"
         return label
 
     def mermaid(self, code):
@@ -160,10 +181,11 @@ class Builder:
             return fallback
         return f"![](mermaid/{n}.png){{width=70%}}"
 
-    def convert(self, text):
+    def convert(self, text, stem=None):
         """Obsidian markdown -> pandoc markdown."""
         out, lines, i = [], text.splitlines(), 0
         in_math = False
+        heading_no = 0
         # Shift headings so the shallowest one becomes level 2 (chapter is level 1).
         levels, fenced = [], False
         for line in lines:
@@ -199,6 +221,9 @@ class Builder:
 
             if h := HEADING.match(line):
                 line = "#" * max(1, min(6, len(h.group(1)) + shift)) + " " + h.group(2)
+                if stem:
+                    line += f" {{#{slug(stem)}-h{heading_no}}}"
+                heading_no += 1
             if c := CALLOUT.match(line):
                 prefix, kind, title = c.groups()
                 line = f"{prefix}**{title or kind.capitalize()}**\n{prefix.rstrip()}"
@@ -226,6 +251,10 @@ def main():
     if not parts:
         sys.exit("no parts/notes found in index.md")
 
+    for _, stems in parts:
+        for stem in stems:
+            b.register(stem, split_frontmatter(b.notes[stem].read_text())[1])
+
     doc = [f"# {title} {{.unnumbered}}\n", b.convert(index_body)]
     used = {"index"}
     for part, stems in parts:
@@ -233,7 +262,7 @@ def main():
         for stem in stems:
             used.add(stem)
             _, body = split_frontmatter(b.notes[stem].read_text())
-            doc.append(f"\n# {stem} {{#{slug(stem)}}}\n\n{b.convert(body)}\n")
+            doc.append(f"\n# {stem} {{#{slug(stem)}}}\n\n{b.convert(body, stem)}\n")
     for stem in sorted(set(b.notes) - used):
         warn(f"note not listed in index.md, skipped: {stem}")
 
