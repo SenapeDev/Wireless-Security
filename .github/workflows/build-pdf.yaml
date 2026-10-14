@@ -1,0 +1,62 @@
+name: Build PDF and publish release
+
+on:
+  push:
+    branches:
+      - v5
+    paths:
+      - "content/**"
+      - ".github/scripts/**"
+      - ".github/workflows/build-pdf.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create the release
+
+concurrency:
+  group: build-pdf
+  cancel-in-progress: false
+
+env:
+  PDF_NAME: Wireless-Security.pdf
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pandoc and LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pandoc \
+            texlive-xetex texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended texlive-plain-generic lmodern \
+            fonts-dejavu
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install mermaid-cli (uses the Chrome preinstalled on the runner)
+        run: |
+          PUPPETEER_SKIP_DOWNLOAD=true npm install -g @mermaid-js/mermaid-cli
+          echo "{\"executablePath\": \"$(command -v google-chrome)\", \"args\": [\"--no-sandbox\"]}" > "$RUNNER_TEMP/puppeteer.json"
+          echo "PUPPETEER_CONFIG=$RUNNER_TEMP/puppeteer.json" >> "$GITHUB_ENV"
+
+      - name: Build PDF
+        run: python3 .github/scripts/build_pdf.py --out "$PDF_NAME"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="pdf-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          gh release create "$tag" "$PDF_NAME" \
+            --target "$GITHUB_SHA" \
+            --latest \
+            --title "Wireless Security notes ($(date -u +%Y-%m-%d))" \
+            --notes "PDF built from commit ${GITHUB_SHA::7}.
+
+          Always-current link: https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/${PDF_NAME}"
