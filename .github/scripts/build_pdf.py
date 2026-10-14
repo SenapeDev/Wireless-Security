@@ -29,6 +29,8 @@ FENCE = re.compile(r"^\s*(```|~~~)")
 WIKILINK = re.compile(r"(!?)\[\[([^\]]+?)\]\]")
 BLOCK_ID = re.compile(r"\s+\^[A-Za-z0-9-]+\s*$")
 CALLOUT = re.compile(r"^(\s*>\s*)\[!(\w+)\][+-]?[ \t]*(.*?)\s*$")
+IMG_MD = re.compile(r"(!\[\]\([^)]*\)(?:\{[^}]*\})?)")
+LINE_PREFIX = re.compile(r"^(\s*(?:>\s*)*)([-*+]\s+|\d+[.)]\s+)?")
 HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".gif", ".pdf"}
 # Rendered width (px) that corresponds to a full text line.
@@ -181,6 +183,20 @@ class Builder:
             return fallback
         return f"![](mermaid/{n}.png){{width=70%}}"
 
+    @staticmethod
+    def isolate_images(line):
+        """Give every image its own paragraph, keeping list/quote indentation."""
+        m = LINE_PREFIX.match(line)
+        indent = m.group(1) + " " * len(m.group(2) or "")
+        out, first = [], True
+        for piece in IMG_MD.split(line):
+            if IMG_MD.fullmatch(piece):
+                out += ["", indent + piece, ""]
+            elif piece.strip():
+                out.append(piece.rstrip() if first else indent + piece.strip())
+            first = False
+        return out
+
     def convert(self, text, stem=None):
         """Obsidian markdown -> pandoc markdown."""
         out, lines, i = [], text.splitlines(), 0
@@ -229,7 +245,10 @@ class Builder:
                 line = f"{prefix}**{title or kind.capitalize()}**\n{prefix.rstrip()}"
             if not in_math:
                 line = WIKILINK.sub(self.wikilink, line)
-            out.append(line)
+            if "![](" in line and not in_math and not line.lstrip().startswith("|"):
+                out += self.isolate_images(line)
+            else:
+                out.append(line)
             i += 1
         return "\n".join(out)
 
