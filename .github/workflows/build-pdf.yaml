@@ -26,21 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pandoc and LaTeX
+      - name: Install pandoc and fonts
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            pandoc \
-            texlive-xetex texlive-latex-recommended texlive-latex-extra \
-            texlive-fonts-recommended texlive-plain-generic lmodern \
-            fonts-dejavu
+          sudo apt-get install -y --no-install-recommends pandoc fonts-dejavu
 
       - uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - name: Install mermaid-cli (uses the Chrome preinstalled on the runner)
+      - name: Install KaTeX and mermaid-cli (uses the Chrome preinstalled on the runner)
         run: |
+          npm install -g katex
+          echo "KATEX_DIR=$(npm root -g)/katex/dist" >> "$GITHUB_ENV"
           PUPPETEER_SKIP_DOWNLOAD=true npm install -g @mermaid-js/mermaid-cli
           echo "{\"executablePath\": \"$(command -v google-chrome)\", \"args\": [\"--no-sandbox\"]}" > "$RUNNER_TEMP/puppeteer.json"
           echo "PUPPETEER_CONFIG=$RUNNER_TEMP/puppeteer.json" >> "$GITHUB_ENV"

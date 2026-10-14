@@ -7,11 +7,16 @@ first page.
 
 Usage: build_pdf.py [--content content] [--out Wireless-Security.pdf]
                     [--work build/pdf]
-Requires pandoc + xelatex; mermaid-cli (`mmdc`) is optional (without it,
-mermaid blocks stay as code listings).
+Pipeline: notes -> one HTML page (pandoc, KaTeX for formulas) -> PDF
+(headless Chrome). No LaTeX needed.
+
+Requires pandoc, Chrome/Chromium and a KaTeX install (`npm install katex`;
+set KATEX_DIR to node_modules/katex/dist if it isn't found automatically).
+mermaid-cli (`mmdc`) is optional (without it, mermaid blocks stay as code).
 """
 
 import argparse
+import html
 import os
 import re
 import shutil
@@ -38,8 +43,22 @@ def slug(name):
     return "note-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
 
 
-def latex_escape(text):
-    return re.sub(r"([&%$#_{}])", r"\\\1", text)
+def find_katex():
+    candidates = [os.environ.get("KATEX_DIR", ""), "node_modules/katex/dist"]
+    if npm := shutil.which("npm"):
+        root = subprocess.run([npm, "root", "-g"], capture_output=True, text=True).stdout.strip()
+        candidates.append(f"{root}/katex/dist")
+    for c in candidates:
+        if c and (Path(c) / "katex.min.js").exists():
+            return Path(c).resolve()
+    sys.exit("KaTeX not found: run `npm install katex` or set KATEX_DIR")
+
+
+def find_chrome():
+    for name in (os.environ.get("CHROME", ""), "google-chrome", "chromium", "chromium-browser"):
+        if name and (path := shutil.which(name)):
+            return path
+    sys.exit("Chrome/Chromium not found (set CHROME)")
 
 
 def split_frontmatter(text):
@@ -208,7 +227,7 @@ def main():
     doc = [f"# {title} {{.unnumbered}}\n", b.convert(index_body)]
     used = {"index"}
     for part, stems in parts:
-        doc.append(f"\n```{{=latex}}\n\\part{{{latex_escape(part)}}}\n```\n")
+        doc.append(f'\n<h1 class="part">{html.escape(part)}</h1>\n')
         for stem in stems:
             used.add(stem)
             _, body = split_frontmatter(b.notes[stem].read_text())
@@ -219,22 +238,22 @@ def main():
     book = work / "book.md"
     book.write_text("\n".join(doc))
 
-    cmd = [
-        "pandoc", str(book), "-o", str(args.out.resolve()),
+    katex = find_katex()
+    page = work / "book.html"
+    subprocess.run([
+        "pandoc", str(book), "-o", str(page), "--standalone",
         "-f", "markdown+lists_without_preceding_blankline-citations-implicit_header_references",
-        "--pdf-engine=xelatex",
-        "--top-level-division=chapter", "--number-sections",
-        "--resource-path", str(work),
+        "--number-sections", "--resource-path", str(work),
         "--highlight-style=tango",
-        "-H", str(HERE / "pdf-header.tex"),
-        "-V", "documentclass=book", "-V", "classoption=oneside",
-        "-V", "geometry:margin=2.5cm", "-V", "fontsize=11pt",
-        "-V", "mainfont=DejaVu Serif", "-V", "sansfont=DejaVu Sans",
-        "-V", "monofont=DejaVu Sans Mono", "-V", "monofontoptions=Scale=0.85",
-        "-V", "colorlinks=true", "-V", "linkcolor=blue", "-V", "urlcolor=blue",
-        "-V", "secnumdepth=2",
-        "-M", f"title-meta={title}", "-M", "author-meta=SenapeDev",
-        "-M", "lang=en",
+        "--katex=" + katex.as_uri() + "/",
+        "-c", str(HERE / "pdf.css"),
+        "-M", f"title={title}", "-M", "lang=en",
+    ], check=True)
+
+    cmd = [
+        find_chrome(), "--headless", "--no-sandbox", "--disable-gpu",
+        "--no-pdf-header-footer", "--virtual-time-budget=60000",
+        f"--print-to-pdf={args.out.resolve()}", page.as_uri(),
     ]
     print("+", " ".join(cmd))
     subprocess.run(cmd, check=True)
