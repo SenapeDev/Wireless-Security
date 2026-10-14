@@ -143,6 +143,8 @@ class Builder:
     def mermaid(self, code):
         self.mermaid_count += 1
         n = self.mermaid_count
+        # Obsidian accepts anonymous subgraphs; current mermaid-cli doesn't.
+        code = re.sub(r"^(\s*)subgraph\s*$", lambda m: f'{m.group(1)}subgraph sg{n}[" "]', code, flags=re.M)
         src, out = self.work / "mermaid" / f"{n}.mmd", self.work / "mermaid" / f"{n}.png"
         fallback = "```\n" + code + "\n```"
         if not self.mmdc:
@@ -242,7 +244,7 @@ def main():
     page = work / "book.html"
     subprocess.run([
         "pandoc", str(book), "-o", str(page), "--standalone",
-        "-f", "markdown+lists_without_preceding_blankline-citations-implicit_header_references",
+        "-f", "markdown+lists_without_preceding_blankline-blank_before_header-citations-implicit_header_references",
         "--number-sections", "--resource-path", str(work),
         "--highlight-style=tango",
         "--katex=" + katex.as_uri() + "/",
