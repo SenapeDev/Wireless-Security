@@ -5,6 +5,8 @@ title: "Wireless Security"
 #### Overview
 This is a collection of notes covering the principles of wireless communications and the security of modern wireless technologies. Topics range from signal processing and digital communication fundamentals to the protocols, architectures, and security mechanisms behind GNSS, Wi-Fi, Bluetooth, and cellular networks. Whenever applicable, attacks, protocol weaknesses, and mitigation techniques are presented alongside the technologies they target.
 
+**[Download these notes as a PDF](https://github.com/SenapeDev/Wireless-Security/releases/latest/download/Wireless-Security.pdf)** (rebuilt automatically at every update)
+
 
 
 > [!danger] Copyright notice 

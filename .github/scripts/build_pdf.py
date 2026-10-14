@@ -266,6 +266,8 @@ def main():
 
     meta, index_body = split_frontmatter((content / "index.md").read_text())
     title = meta.get("title", "Wireless Security")
+    # The "download the PDF" line is for the website only.
+    index_body = "\n".join(l for l in index_body.splitlines() if "releases/latest/download" not in l)
     parts = parse_index(index_body, b.notes)
     if not parts:
         sys.exit("no parts/notes found in index.md")
